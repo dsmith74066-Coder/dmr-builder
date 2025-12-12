@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMR Builder</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    h1 { color: #00d4ff; margin-bottom: 5px; }
+    h2 { color: #00d4ff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    h3 { color: #00d4ff; margin-top: 0; }
+    .subtitle { color: #888; margin-bottom: 30px; }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: #2a2a4a;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      border-radius: 5px 5px 0 0;
+    }
+    .tab.active { background: #3a3a6a; color: #00d4ff; }
+    .tab:hover { background: #3a3a6a; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: #2a2a4a;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #3a3a6a;
+    }
+    th { color: #00d4ff; }
+    tr:hover { background: #3a3a6a; }
+
+    input, select {
+      padding: 8px 12px;
+      border: 1px solid #3a3a6a;
+      border-radius: 4px;
+      background: #1a1a2e;
+      color: #eee;
+      margin-right: 10px;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #00d4ff;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: #00d4ff;
+      color: #1a1a2e;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #00b8e6; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    button.secondary {
+      background: #3a3a6a;
+      color: #eee;
+    }
+    button.secondary:hover { background: #4a4a8a; }
+    button.danger { background: #ff4757; }
+    button.danger:hover { background: #ff3344; }
+
+    .btn-small {
+      padding: 4px 8px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .search-box input { flex: 1; }
+
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .status.success { background: #2d5a3d; color: #7dffaf; }
+    .status.error { background: #5a2d2d; color: #ff7d7d; }
+    .status.info { background: #2d3a5a; color: #7dafff; }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: #2a2a4a;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      flex: 1;
+    }
+    .stat-number {
+      font-size: 36px;
+      color: #00d4ff;
+      font-weight: bold;
+    }
+    .stat-label { color: #888; }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .form-group label {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .hidden { display: none !important; }
+
+    .tg-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .tg-badge {
+      background: #3a3a6a;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+    .tg-badge .slot {
+      background: #00d4ff;
+      color: #1a1a2e;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-right: 5px;
+      font-weight: bold;
+    }
+
+    pre {
+      background: #1a1a2e;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>DMR Builder</h1>
+  <p class="subtitle">Codeplug builder with BrandMeister integration</p>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number" id="stat-repeaters">0</div>
+      <div class="stat-label">Repeaters</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="stat-talkgroups">0</div>
+      <div class="stat-label">Talkgroups</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="stat-channels">0</div>
+      <div class="stat-label">Channels</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-panel="repeaters">Repeaters</button>
+    <button class="tab" data-panel="talkgroups">Talkgroups</button>
+    <button class="tab" data-panel="channels">Channels</button>
+    <button class="tab" data-panel="export">Export</button>
+  </div>
+
+  <!-- Repeaters Panel -->
+  <div class="panel active" id="repeaters">
+    <div class="card">
+      <h3>Search BrandMeister Repeaters</h3>
+      <div class="search-box">
+        <input type="text" id="repeater-search" placeholder="Search by city (e.g., Tulsa, Mannford)">
+        <button onclick="searchRepeaters()">Search BrandMeister</button>
+        <button class="secondary" onclick="searchLocalRepeaters()">Search My Repeaters</button>
+      </div>
+      <div id="search-status"></div>
+      <div id="search-results"></div>
+    </div>
+
+    <div class="card">
+      <h3>My Repeaters</h3>
+      <table id="repeaters-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th>TX Freq</th>
+            <th>RX Freq</th>
+            <th>CC</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Talkgroups Panel -->
+  <div class="panel" id="talkgroups">
+    <div class="card">
+      <h3>Sync Talkgroups</h3>
+      <p>Sync all talkgroups from BrandMeister network.</p>
+      <button onclick="syncTalkgroups()">Sync from BrandMeister</button>
+      <span id="sync-status" style="margin-left: 15px; color: #888;"></span>
+    </div>
+
+    <div class="card">
+      <h3>Search Talkgroups</h3>
+      <div class="search-box">
+        <input type="text" id="tg-search" placeholder="Search by name or number..." onkeyup="filterTalkgroups()">
+      </div>
+      <table id="talkgroups-table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Channels Panel -->
+  <div class="panel" id="channels">
+    <div class="card">
+      <h3>Add Repeater from BrandMeister US</h3>
+      <p style="color: #888; margin-bottom: 10px;">Search all US repeaters and import with auto-created channels</p>
+      <div class="search-box">
+        <input type="text" id="us-repeater-search" placeholder="Search by callsign or city..." onkeyup="filterUSRepeaters()">
+        <button onclick="loadUSRepeaters()" class="secondary">Load US Repeaters</button>
+      </div>
+      <div id="us-repeaters-status"></div>
+      <div id="us-repeaters-list" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <div class="card">
+      <h3>Create Channel</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Repeater (from My Repeaters)</label>
+          <select id="channel-repeater"></select>
+        </div>
+        <div class="form-group">
+          <label>Talkgroup</label>
+          <select id="channel-talkgroup"></select>
+        </div>
+        <div class="form-group">
+          <label>Slot</label>
+          <select id="channel-slot">
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button onclick="createChannel()">Add Channel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>My Channels</h3>
+      <table id="channels-table">
+        <thead>
+          <tr>
+            <th>Repeater</th>
+            <th>Talkgroup</th>
+            <th>TG #</th>
+            <th>Slot</th>
+            <th>Color Code</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Export Panel -->
+  <div class="panel" id="export">
+    <div class="card">
+      <h3>Export Codeplug</h3>
+      <p>Export your channels as a TYT-compatible CSV file.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Filter by Repeater (optional)</label>
+          <select id="export-repeater">
+            <option value="">All Repeaters</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button onclick="exportCodeplug()">Download CSV</button>
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button class="secondary" onclick="previewExport()">Preview</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Preview</h3>
+      <pre id="export-preview">Click "Preview" to see export data...</pre>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+
+    // Tab navigation
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.panel).classList.add('active');
+      });
+    });
+
+    // Load stats
+    async function loadStats() {
+      const res = await fetch(`${API}/api/stats`);
+      const stats = await res.json();
+      document.getElementById('stat-repeaters').textContent = stats.repeaters;
+      document.getElementById('stat-talkgroups').textContent = stats.talkgroups;
+      document.getElementById('stat-channels').textContent = stats.channels;
+    }
+
+    // Repeaters
+    async function loadRepeaters() {
+      const res = await fetch(`${API}/api/repeaters`);
+      const repeaters = await res.json();
+      renderMyRepeaters(repeaters);
+      populateRepeaterDropdowns(repeaters);
+    }
+
+    function renderMyRepeaters(repeaters) {
+      const tbody = document.querySelector('#repeaters-table tbody');
+      tbody.innerHTML = repeaters.map(r => {
+        const hasBmId = r.notes && r.notes.includes('BM ID:');
+        return `
+          <tr>
+            <td>${r.name}</td>
+            <td>${r.city || '-'}</td>
+            <td>${r.state || '-'}</td>
+            <td>${r.tx_freq}</td>
+            <td>${r.rx_freq}</td>
+            <td>${r.color_code}</td>
+            <td>
+              ${hasBmId ? `<button class="btn-small secondary" onclick="autoChannels(${r.repeater_id})">Auto Channels</button>` : ''}
+              <button class="btn-small danger" onclick="deleteRepeater(${r.repeater_id})">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function autoChannels(repeaterId) {
+      try {
+        const res = await fetch(`${API}/api/repeaters/${repeaterId}/auto-channels`, { method: 'POST' });
+        const result = await res.json();
+        if (result.error) {
+          alert('Error: ' + result.error);
+        } else {
+          alert(`Created ${result.channels_created} channels!`);
+          loadChannels();
+          loadStats();
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function searchRepeaters() {
+      const query = document.getElementById('repeater-search').value;
+      if (!query) return alert('Enter a search term');
+
+      document.getElementById('search-status').innerHTML = '<div class="status info">Searching BrandMeister...</div>';
+
+      const res = await fetch(`${API}/api/repeaters/search?q=${encodeURIComponent(query)}`);
+      const repeaters = await res.json();
+
+      document.getElementById('search-status').innerHTML = `<div class="status success">Found ${repeaters.length} repeaters. Click "View TGs" to see static talkgroups, or "Add + Channels" to import with auto-created channels.</div>`;
+      renderSearchResults(repeaters);
+    }
+
+    async function searchLocalRepeaters() {
+      const query = document.getElementById('repeater-search').value;
+      if (!query) return alert('Enter a search term');
+
+      const res = await fetch(`${API}/api/repeaters/search/local?q=${encodeURIComponent(query)}`);
+      const repeaters = await res.json();
+
+      document.getElementById('search-status').innerHTML = `<div class="status success">Found ${repeaters.length} local repeaters.</div>`;
+      renderMyRepeaters(repeaters);
+    }
+
+    function renderSearchResults(repeaters) {
+      document.getElementById('search-results').innerHTML = repeaters.length > 0 ? `
+        <table>
+          <thead><tr><th>Callsign</th><th>City</th><th>TX</th><th>RX</th><th>CC</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${repeaters.map(r => `
+              <tr>
+                <td>${r.callsign || '-'}</td>
+                <td>${r.city || '-'}</td>
+                <td>${r.tx}</td>
+                <td>${r.rx}</td>
+                <td>${r.colorcode}</td>
+                <td>${r.statusText || '-'}</td>
+                <td>
+                  <button class="btn-small secondary" onclick="viewStaticTGs(${r.id})">View TGs</button>
+                  <button class="btn-small" onclick="importWithChannels(${r.id})">Add + Channels</button>
+                </td>
+              </tr>
+              <tr id="tgs-${r.id}" class="hidden">
+                <td colspan="7" style="background: #1a1a2e;">
+                  <div id="tgs-content-${r.id}">Loading...</div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      ` : '<p style="color: #888;">No repeaters found.</p>';
+    }
+
+    async function deleteRepeater(id) {
+      if (!confirm('Delete this repeater and all its channels?')) return;
+      await fetch(`${API}/api/repeaters/${id}`, { method: 'DELETE' });
+      loadRepeaters();
+      loadStats();
+    }
+
+    async function viewStaticTGs(bmId) {
+      const row = document.getElementById(`tgs-${bmId}`);
+      const content = document.getElementById(`tgs-content-${bmId}`);
+
+      if (row.classList.contains('hidden')) {
+        row.classList.remove('hidden');
+        content.innerHTML = '<span style="color: #888;">Loading talkgroups...</span>';
+
+        try {
+          const res = await fetch(`${API}/api/repeaters/bm/${bmId}/talkgroups`);
+          const tgs = await res.json();
+
+          if (tgs.length === 0) {
+            content.innerHTML = '<span style="color: #888;">No static talkgroups configured</span>';
+          } else {
+            content.innerHTML = `
+              <strong>Static Talkgroups:</strong>
+              <div class="tg-list">
+                ${tgs.map(tg => `
+                  <span class="tg-badge">
+                    <span class="slot">TS${tg.slot}</span> ${tg.talkgroup} - ${tg.name}
+                  </span>
+                `).join('')}
+              </div>
+            `;
+          }
+        } catch (err) {
+          content.innerHTML = `<span style="color: #ff4757;">Error: ${err.message}</span>`;
+        }
+      } else {
+        row.classList.add('hidden');
+      }
+    }
+
+    async function importWithChannels(bmId) {
+      document.getElementById('search-status').innerHTML = '<div class="status info">Importing repeater and creating channels...</div>';
+
+      try {
+        const res = await fetch(`${API}/api/repeaters/import-with-channels`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bm_id: bmId })
+        });
+        const result = await res.json();
+
+        if (result.error) {
+          document.getElementById('search-status').innerHTML = `<div class="status error">Error: ${result.error}</div>`;
+        } else {
+          document.getElementById('search-status').innerHTML = `<div class="status success">Imported "${result.repeater.name}" with ${result.channels_created} channels!</div>`;
+          loadRepeaters();
+          loadChannels();
+          loadStats();
+        }
+      } catch (err) {
+        document.getElementById('search-status').innerHTML = `<div class="status error">Error: ${err.message}</div>`;
+      }
+    }
+
+    // Talkgroups
+    let allTalkgroups = [];
+
+    async function loadTalkgroups() {
+      const res = await fetch(`${API}/api/talkgroups`);
+      allTalkgroups = await res.json();
+      renderTalkgroups(allTalkgroups.slice(0, 100));
+      populateTalkgroupDropdown(allTalkgroups);
+    }
+
+    function renderTalkgroups(talkgroups) {
+      const tbody = document.querySelector('#talkgroups-table tbody');
+      tbody.innerHTML = talkgroups.map(t => `
+        <tr>
+          <td>${t.number}</td>
+          <td>${t.name}</td>
+          <td>${t.type}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterTalkgroups() {
+      const query = document.getElementById('tg-search').value.toLowerCase();
+      const filtered = allTalkgroups.filter(t =>
+        t.name.toLowerCase().includes(query) ||
+        String(t.number).includes(query)
+      );
+      renderTalkgroups(filtered.slice(0, 100));
+    }
+
+    async function syncTalkgroups() {
+      document.getElementById('sync-status').textContent = 'Syncing...';
+      const res = await fetch(`${API}/api/talkgroups/sync`, { method: 'POST' });
+      const result = await res.json();
+      document.getElementById('sync-status').textContent = result.message ?
+        `Synced ${result.records_synced} talkgroups` : result.error;
+      loadTalkgroups();
+      loadStats();
+    }
+
+    // US Repeaters
+    let usRepeaters = [];
+
+    async function loadUSRepeaters() {
+      document.getElementById('us-repeaters-status').innerHTML = '<div class="status info">Loading US repeaters from BrandMeister... (this may take a moment)</div>';
+      document.getElementById('us-repeaters-list').innerHTML = '';
+
+      try {
+        const res = await fetch(`${API}/api/repeaters/bm/us`);
+        usRepeaters = await res.json();
+        if (!Array.isArray(usRepeaters)) {
+          throw new Error('Invalid response from API');
+        }
+        document.getElementById('us-repeaters-status').innerHTML = `<div class="status success">Loaded ${usRepeaters.length} US repeaters. Type to filter by callsign or city.</div>`;
+        filterUSRepeaters();
+      } catch (err) {
+        document.getElementById('us-repeaters-status').innerHTML = `<div class="status error">Error: ${err.message}</div>`;
+      }
+    }
+
+    function filterUSRepeaters() {
+      const filter = document.getElementById('us-repeater-search').value.toLowerCase();
+      if (!Array.isArray(usRepeaters) || usRepeaters.length === 0) return;
+
+      const filtered = filter
+        ? usRepeaters.filter(r =>
+            (r.callsign && r.callsign.toLowerCase().includes(filter)) ||
+            (r.city && r.city.toLowerCase().includes(filter))
+          )
+        : usRepeaters.slice();
+
+      const display = filtered.slice(0, 50);
+      document.getElementById('us-repeaters-list').innerHTML = display.length > 0 ? `
+        <table>
+          <thead><tr><th>Callsign</th><th>City</th><th>TX</th><th>RX</th><th>CC</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${display.map(r => `
+              <tr>
+                <td>${r.callsign || '-'}</td>
+                <td>${r.city || '-'}</td>
+                <td>${r.tx}</td>
+                <td>${r.rx}</td>
+                <td>${r.colorcode}</td>
+                <td>${r.statusText || '-'}</td>
+                <td>
+                  <button class="btn-small secondary" onclick="viewStaticTGs(${r.id})">View TGs</button>
+                  <button class="btn-small" onclick="importWithChannels(${r.id})">Add + Channels</button>
+                </td>
+              </tr>
+              <tr id="tgs-${r.id}" class="hidden">
+                <td colspan="7" style="background: #1a1a2e;">
+                  <div id="tgs-content-${r.id}">Loading...</div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        ${filtered.length > 50 ? `<p style="color: #888; margin-top: 10px;">Showing 50 of ${filtered.length} results. Type more to narrow search.</p>` : ''}
+      ` : '<p style="color: #888;">No repeaters found matching your search.</p>';
+    }
+
+    // Channels
+    async function loadChannels() {
+      const res = await fetch(`${API}/api/channels`);
+      const channels = await res.json();
+      const tbody = document.querySelector('#channels-table tbody');
+      tbody.innerHTML = channels.map(c => `
+        <tr>
+          <td>${c.repeater_name}</td>
+          <td>${c.talkgroup_name}</td>
+          <td>${c.talkgroup_number}</td>
+          <td>${c.slot}</td>
+          <td>${c.color_code}</td>
+          <td><button class="btn-small danger" onclick="deleteChannel(${c.channel_id})">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function createChannel() {
+      const repeater_id = document.getElementById('channel-repeater').value;
+      const tg_id = document.getElementById('channel-talkgroup').value;
+      const slot = document.getElementById('channel-slot').value;
+
+      if (!repeater_id || !tg_id) return alert('Select repeater and talkgroup');
+
+      const repRes = await fetch(`${API}/api/repeaters/${repeater_id}`);
+      const repeater = await repRes.json();
+      const tgRes = await fetch(`${API}/api/talkgroups/${tg_id}`);
+      const tg = await tgRes.json();
+
+      await fetch(`${API}/api/channels`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repeater_id: parseInt(repeater_id),
+          tg_id: parseInt(tg_id),
+          slot: parseInt(slot),
+          contact_name: tg.name,
+          rx_freq: repeater.rx_freq,
+          tx_freq: repeater.tx_freq,
+          color_code: repeater.color_code
+        })
+      });
+
+      loadChannels();
+      loadStats();
+    }
+
+    async function deleteChannel(id) {
+      if (!confirm('Delete this channel?')) return;
+      await fetch(`${API}/api/channels/${id}`, { method: 'DELETE' });
+      loadChannels();
+      loadStats();
+    }
+
+    // Export
+    function exportCodeplug() {
+      const repeaterId = document.getElementById('export-repeater').value;
+      const url = repeaterId ?
+        `${API}/api/export/tyt?repeater_id=${repeaterId}` :
+        `${API}/api/export/tyt`;
+      window.location.href = url;
+    }
+
+    async function previewExport() {
+      const repeaterId = document.getElementById('export-repeater').value;
+      const url = repeaterId ?
+        `${API}/api/export/tyt/preview?repeater_id=${repeaterId}` :
+        `${API}/api/export/tyt/preview`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      document.getElementById('export-preview').textContent = data.preview || 'No channels to export';
+    }
+
+    // Populate dropdowns
+    function populateRepeaterDropdowns(repeaters) {
+      const channelSelect = document.getElementById('channel-repeater');
+      const exportSelect = document.getElementById('export-repeater');
+
+      const options = repeaters.map(r => `<option value="${r.repeater_id}">${r.name} (${r.city || 'Unknown'})</option>`).join('');
+
+      channelSelect.innerHTML = '<option value="">Select repeater...</option>' + options;
+      exportSelect.innerHTML = '<option value="">All Repeaters</option>' + options;
+    }
+
+    function populateTalkgroupDropdown(talkgroups) {
+      const select = document.getElementById('channel-talkgroup');
+      select.innerHTML = '<option value="">Select talkgroup...</option>' +
+        talkgroups.slice(0, 500).map(t => `<option value="${t.tg_id}">${t.number} - ${t.name}</option>`).join('');
+    }
+
+    // Initialize
+    loadStats();
+    loadRepeaters();
+    loadTalkgroups();
+    loadChannels();
+  </script>
+</body>
+</html>

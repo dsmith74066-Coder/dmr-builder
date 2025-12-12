@@ -1,0 +1,54 @@
+{
+  "name": "dmr-builder",
+  "version": "1.0.0",
+  "description": "DMR codeplug builder with BrandMeister integration",
+  "main": "electron.js",
+  "author": "DMR Builder",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "init-db": "node scripts/init-db.js",
+    "electron": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win --dir",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.dmrbuilder.app",
+    "productName": "DMR Builder",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "public/**/*",
+      "db/**/*",
+      "scripts/**/*",
+      "electron.js",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "public/favicon.ico"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "keywords": ["dmr", "brandmeister", "codeplug", "tyt"],
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  }
+}
